@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest -i",
-    "start": "node server.js"
+    "test": "jest -i"
   },
   "author": "",
   "license": "ISC",
@@ -19,13 +18,5 @@
     "jsonwebtoken": "^8.3.0",
     "pg": "^8.3.3",
     "supertest": "^4.0.2"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nikgun1984/Express-Messagely.git"
-  },
-  "bugs": {
-    "url": "https://github.com/nikgun1984/Express-Messagely/issues"
-  },
-  "homepage": "https://github.com/nikgun1984/Express-Messagely#readme"
+  }
 }

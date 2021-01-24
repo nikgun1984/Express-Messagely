@@ -4,7 +4,7 @@ CREATE TABLE users (
     first_name text NOT NULL,
     last_name text NOT NULL,
     phone text NOT NULL,
-    join_at timestamp without time zone NOT NULL,
+    join_at timestamp without time zone NOT NULL DEFAULT now(),
     last_login_at timestamp with time zone
 );
 
@@ -13,6 +13,10 @@ CREATE TABLE messages (
     from_username text NOT NULL REFERENCES users,
     to_username text NOT NULL REFERENCES users,
     body text NOT NULL,
-    sent_at timestamp with time zone NOT NULL,
+    sent_at timestamp with time zone NOT NULL DEFAULT now(),
     read_at timestamp with time zone
 );
+
+-- ALTER TABLE users ALTER COLUMN join_at SET DEFAULT now();
+
+

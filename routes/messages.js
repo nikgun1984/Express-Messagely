@@ -1,3 +1,10 @@
+const express = require("express");
+
+const Message = require("../models/message");
+// const { ensureLoggedIn, ensureCorrectUser } = require("../middleware/auth");
+
+const router = new express.Router();
+
 /** GET /:id - get detail of message.
  *
  * => {message: {id,
@@ -11,6 +18,19 @@
  *
  **/
 
+router.get(
+	"/:id",
+	ensureLoggedIn,
+	ensureCorrectUser,
+	async (req, res, next) => {
+		try {
+			const message = await Message.get(req.params.id);
+			return res.status(200).json(message);
+		} catch (err) {
+			return next(err);
+		}
+	}
+);
 
 /** POST / - post message.
  *
@@ -19,6 +39,14 @@
  *
  **/
 
+router.post("/", ensureLoggedIn, ensureCorrectUser, async (req, res, next) => {
+	try {
+		const createdMessage = await Message.create(req.body);
+		return res.status(201).json(createdMessage);
+	} catch (err) {
+		return next(err);
+	}
+});
 
 /** POST/:id/read - mark message as read:
  *
@@ -28,3 +56,16 @@
  *
  **/
 
+router.post(
+	"/:id/read",
+	ensureLoggedIn,
+	ensureCorrectUser,
+	async (req, res, next) => {
+		try {
+			const readMessage = await Message.markRead(req.params.id);
+			return res.status(201).json(readMessage);
+		} catch (err) {
+			return next(err);
+		}
+	}
+);

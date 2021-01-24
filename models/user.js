@@ -1,8 +1,8 @@
 /** User class for message.ly */
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const { json } = require("body-parser");
 
-const { BCRYPT_WORK_FACTOR, SECRET_KEY } = require("../config");
+const { BCRYPT_WORK_FACTOR } = require("../config");
 const db = require("../db");
 
 /** User of the site. */
@@ -20,7 +20,6 @@ class User {
 	}
 
 	/** Authenticate: is this username/password valid? Returns boolean. */
-
 	static async authenticate(username, password) {
 		const result = await db.query(
 			`
@@ -32,29 +31,24 @@ class User {
 		const user = result.rows[0];
 
 		if (user) {
-			if (await bcrypt.compare(password, user.password)) {
-				jwt.sign({ username }, SECRET_KEY);
-				return true;
-			}
+			return await bcrypt.compare(password, user.password);
 		}
 		return false;
 	}
 
 	/** Update last_login_at for user */
-
 	static async updateLoginTimestamp(username) {
 		const lastLoginAt = new Date();
+		console.log(lastLoginAt);
 		await db.query(
 			`
-          UPDATE users SET last_login_at =$1 WHERE username=$2
+          UPDATE users SET last_login_at =$1 WHERE username=$2 RETURNING username
         `,
 			[lastLoginAt, username]
 		);
 	}
 
-	/** All: basic info on all users:
-	 * [{username, first_name, last_name, phone}, ...] */
-
+	/** All: basic info on all users:*/
 	static async all() {
 		const results = await db.query(`
       SELECT username, first_name, last_name, phone FROM users
@@ -62,15 +56,7 @@ class User {
 		return results.rows;
 	}
 
-	/** Get: get user by username
-	 *
-	 * returns {username,
-	 *          first_name,
-	 *          last_name,
-	 *          phone,
-	 *          join_at,
-	 *          last_login_at } */
-
+	/** Get: get user by username*/
 	static async get(username) {
 		console.log(username);
 		const result = await db.query(
@@ -83,27 +69,27 @@ class User {
 		return result.rows;
 	}
 
-	/** Return messages from this user.
-	 *
-	 * [{id, to_user, body, sent_at, read_at}]
-	 *
-	 * where to_user is
-	 *   {username, first_name, last_name, phone}
-	 */
-
+	/** Return messages from this user.*/
 	static async messagesFrom(username) {
-		//const result
+		const results = db.query(
+			`
+        SELECT from_username, body, sent_at, read_at FROM messages WHERE from_username = $1
+      `,
+			[username]
+		);
+		return results.rows;
 	}
 
-	/** Return messages to this user.
-	 *
-	 * [{id, from_user, body, sent_at, read_at}]
-	 *
-	 * where from_user is
-	 *   {id, first_name, last_name, phone}
-	 */
-
-	static async messagesTo(username) {}
+	/** Return messages to this user.*/
+	static async messagesTo(username) {
+		const results = db.query(
+			`
+        SELECT id, to_username, body, sent_at, read_at FROM messages WHERE to_username = $1
+      `,
+			[username]
+		);
+		return results.rows;
+	}
 }
 
 module.exports = User;

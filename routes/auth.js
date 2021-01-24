@@ -1,7 +1,9 @@
 const express = require("express");
+const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
 const ExpressError = require("../expressError");
+const { SECRET_KEY } = require("../config");
 
 const router = new express.Router();
 
@@ -14,21 +16,18 @@ router.post("/login", async (req, res, next) => {
 		const { username, password } = req.body;
 		if (await User.authenticate(username, password)) {
 			await User.updateLoginTimestamp(username);
-			return res.json({ message: "Successfully Logged in" });
+			const token = jwt.sign({ username }, SECRET_KEY);
+			return res.status(200).json({ token });
 		}
-		throw new ExpressError("Invalid User/Password", 400);
 	} catch (err) {
-		return next(err);
+		return next({ status: 401, message: "Wrong Password/Username" });
 	}
 });
 
 router.post("/register", async (req, res, next) => {
-	console.log("I AM OUTSIDE TRY AND CATCH BLOCK MF");
 	try {
-		console.log(req.body);
-		console.log("IN HERE REGISTER");
 		const { username, password, first_name, last_name, phone } = req.body;
-		const user = await User.register({
+		await User.register({
 			username,
 			password,
 			first_name,
@@ -36,9 +35,12 @@ router.post("/register", async (req, res, next) => {
 			phone,
 		});
 		await User.updateLoginTimestamp(username);
-		return res.json({ message: "Successfully Registered" });
+		if (await User.authenticate(username, password)) {
+			const token = jwt.sign({ username }, SECRET_KEY);
+			return res.status(201).json({ token });
+		}
 	} catch (err) {
-		return next(err);
+		return next({ status: 409, message: "The User already exists..." });
 	}
 });
 

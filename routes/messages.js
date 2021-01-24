@@ -1,7 +1,7 @@
 const express = require("express");
 
 const Message = require("../models/message");
-// const { ensureLoggedIn, ensureCorrectUser } = require("../middleware/auth");
+const { ensureLoggedIn, ensureCorrectUser } = require("../middleware/auth");
 
 const router = new express.Router();
 
@@ -18,19 +18,15 @@ const router = new express.Router();
  *
  **/
 
-router.get(
-	"/:id",
-	ensureLoggedIn,
-	ensureCorrectUser,
-	async (req, res, next) => {
-		try {
-			const message = await Message.get(req.params.id);
-			return res.status(200).json(message);
-		} catch (err) {
-			return next(err);
-		}
+router.get("/:id", ensureLoggedIn, async (req, res, next) => {
+	try {
+		const message = await Message.get(req.params.id);
+
+		return res.status(200).json(message);
+	} catch (err) {
+		return next(err);
 	}
-);
+});
 
 /** POST / - post message.
  *
@@ -69,3 +65,5 @@ router.post(
 		}
 	}
 );
+
+module.exports = router;
